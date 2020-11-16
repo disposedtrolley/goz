@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 type options struct {
@@ -25,6 +26,10 @@ func (o *options) Validate() error {
 	}
 
 	return nil
+}
+
+func (o *options) Version() (version int, wasSet bool) {
+	return o.version, o.visited("version")
 }
 
 func (o *options) visited(name string) bool {
@@ -72,5 +77,16 @@ func main() {
 		fmt.Printf("read game file: %+v", err)
 	}
 
-	fmt.Println(len(fileContents))
+	var gamefileVersion int
+
+	if forcedVersion, wasSet := opts.Version(); wasSet {
+		gamefileVersion = forcedVersion
+	} else {
+		gamefileVersion, err = strconv.Atoi(gamefile[len(gamefile)-1:])
+		if err != nil {
+			fmt.Printf("extract game version: %+v", err)
+		}
+	}
+
+	fmt.Printf("%s is a z%d gamefile weighing in at %d bytes", gamefile, gamefileVersion, len(fileContents))
 }
