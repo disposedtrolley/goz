@@ -2,22 +2,18 @@ package machine
 
 import (
 	"fmt"
-
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
 )
 
 type Game []byte
 
 type Machine struct {
-	game    Game
 	version int
-	mem     *memory.Memory
+	mem     []byte
 }
 
 func NewMachine(game Game) *Machine {
 	return &Machine{
-		game: game,
-		mem:  memory.NewMemory(),
+		mem: game,
 	}
 }
 
@@ -26,14 +22,16 @@ func (m *Machine) WithVersion(version int) {
 }
 
 func (m *Machine) Start() error {
-	m.mem.Load(m.game)
-
 	if m.version == 0 {
 		// Inspect the game file for the version.
-		m.version = int(m.mem.ReadByte(0))
+		m.version = int(m.loadb(0))
 	}
 
-	fmt.Printf("z%d gamefile weighing in at %d bytes", m.version, m.mem.Size())
+	fmt.Printf("z%d gamefile weighing in at %d bytes", m.version, len(m.mem))
 
 	return nil
+}
+
+func (m *Machine) loadb(addr int) byte {
+	return m.mem[addr]
 }
