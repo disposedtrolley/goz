@@ -24,7 +24,7 @@ func (m *Machine) WithVersion(version int) {
 func (m *Machine) Start() error {
 	if m.version == 0 {
 		// Inspect the game file for the version.
-		m.version = int(m.loadb(0))
+		m.version = int(m.loadb(headerVersion))
 	}
 
 	fmt.Printf("z%d gamefile weighing in at %d bytes", m.version, len(m.mem))
@@ -32,6 +32,6 @@ func (m *Machine) Start() error {
 	return nil
 }
 
-func (m *Machine) loadb(addr int) byte {
+func (m *Machine) loadb(addr address) byte {
 	return m.mem[addr]
 }
