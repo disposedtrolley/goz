@@ -4,7 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"strconv"
+
+	"git.sr.ht/~disposedtrolley/go-zmachine/internal/machine"
 )
 
 type options struct {
@@ -77,16 +78,11 @@ func main() {
 		fmt.Printf("read game file: %+v", err)
 	}
 
-	var gamefileVersion int
+	m := machine.NewMachine(machine.Game(fileContents))
 
 	if forcedVersion, wasSet := opts.Version(); wasSet {
-		gamefileVersion = forcedVersion
-	} else {
-		gamefileVersion, err = strconv.Atoi(gamefile[len(gamefile)-1:])
-		if err != nil {
-			fmt.Printf("extract game version: %+v", err)
-		}
+		m.WithVersion(forcedVersion)
 	}
 
-	fmt.Printf("%s is a z%d gamefile weighing in at %d bytes", gamefile, gamefileVersion, len(fileContents))
+	m.Start()
 }
