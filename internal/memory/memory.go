@@ -6,13 +6,6 @@ import (
 
 type Address uint
 
-// constants for some addresses of interest.
-const (
-	HVersion           Address = 0
-	HStaticMemoryBegin Address = 0x0E
-	HHighMemoryBegin   Address = 0x04
-)
-
 type Memory struct {
 	content []byte
 }
