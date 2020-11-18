@@ -43,7 +43,7 @@ func (m *memory) readWord(a address) uint16 {
 // boundsCheck ensures that a is within the region of m's
 // content.
 func (m *memory) boundsCheck(a address) {
-	if int(a) > len(m.content) {
+	if int(a) >= len(m.content) {
 		panic(fmt.Errorf("attempted to access address %x which is outside of initialised memory", a))
 	}
 }
