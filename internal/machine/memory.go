@@ -10,6 +10,7 @@ type address uint
 const (
 	hVersion           address = 0
 	hStaticMemoryBegin address = 0x0E
+	hHighMemoryBegin   address = 0x04
 )
 
 type memory struct {
@@ -40,11 +41,33 @@ func (m *memory) readWord(a address) uint16 {
 	return uint16(m.content[a])<<8 | uint16(m.content[a+1])
 }
 
+func (m *memory) writeByte(a address, b byte) {
+	m.boundsCheck(a)
+	m.readOnlyCheck(a)
+
+	m.content[a] = b
+}
+
+func (m *memory) writeWord(a address, w uint16) {
+	m.boundsCheck(a)
+	m.boundsCheck(a + 1)
+	m.readOnlyCheck(a)
+
+	m.content[a] = byte(w >> 8)
+	m.content[a+1] = byte(w)
+}
+
 // boundsCheck ensures that a is within the region of m's
 // content.
 func (m *memory) boundsCheck(a address) {
 	if int(a) >= len(m.content) {
 		panic(fmt.Errorf("attempted to access address %x which is outside of initialised memory", a))
+	}
+}
+
+func (m *memory) readOnlyCheck(a address) {
+	if a >= hStaticMemoryBegin {
+		panic(fmt.Errorf("attempted to write to address %x which is in static memory", a))
 	}
 }
 

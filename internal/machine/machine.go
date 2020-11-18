@@ -28,7 +28,11 @@ func (m *Machine) Start() error {
 	}
 
 	fmt.Printf("z%d gamefile weighing in at %d bytes\n", m.version, m.mem.size())
-	fmt.Printf("beginning of static memory: %x\n", m.mem.readWord(hStaticMemoryBegin))
+	fmt.Printf(`
+beginning of:
+  static memory: %x
+  high memory: %x
+`, m.mem.readWord(hStaticMemoryBegin), m.mem.readWord(hHighMemoryBegin))
 
 	return nil
 }
