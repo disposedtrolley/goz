@@ -12,14 +12,25 @@ import (
 
 func TestHeaderCommon(t *testing.T) {
 	tests := []struct {
-		Name            string
-		File            test.Gamefile
-		ExpectedVersion uint8
+		Name                    string
+		File                    test.Gamefile
+		ExpectedVersion         uint8
+		ExpectedFlags           uint8
+		ExpectedHighMemoryStart uint16
 	}{
 		{
-			Name:            "common headers for a z3 game",
-			File:            test.ZorkZ3,
-			ExpectedVersion: 3,
+			Name:                    "headers for Zork",
+			File:                    test.ZorkZ3,
+			ExpectedVersion:         3,
+			ExpectedFlags:           0b00000000,
+			ExpectedHighMemoryStart: 0x4e37,
+		},
+		{
+			Name:                    "headers for Jigsaw",
+			File:                    test.JigsawZ8,
+			ExpectedVersion:         8,
+			ExpectedFlags:           0b00000010,
+			ExpectedHighMemoryStart: 0xbc60,
 		},
 	}
 
@@ -31,8 +42,13 @@ func TestHeaderCommon(t *testing.T) {
 			mem := memory.NewMemory(b)
 
 			require.NotPanics(t, func() {
+				// Version
 				version := mem.ReadByte(memory.HVersion)
 				assert.Equal(t, tc.ExpectedVersion, version)
+
+				// Flags bitfield
+				flags := mem.ReadByte(memory.HFlags)
+				assert.Equal(t, tc.ExpectedFlags, flags)
 			})
 		})
 	}
