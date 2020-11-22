@@ -1,4 +1,4 @@
-package strings
+package zstring
 
 import (
 	"strings"
@@ -31,9 +31,9 @@ func (zp *ZStringProcessor) Ztoa(z []uint16) string {
 		//   --first byte-------   --second byte---
 		//   7    6 5 4 3 2  1 0   7 6 5  4 3 2 1 0
 		//   bit  --first--  --second---  --third--
-		output.WriteString(zp.currentAlphabet[word >> 10 & 0x1F])
-		output.WriteString(zp.currentAlphabet[word >> 5 & 0x1F])
-		output.WriteString(zp.currentAlphabet[word >> 0 & 0x1F])
+		output.WriteString(zp.currentAlphabet[word>>10&0x1F])
+		output.WriteString(zp.currentAlphabet[word>>5&0x1F])
+		output.WriteString(zp.currentAlphabet[word>>0&0x1F])
 
 		leftoverBit := word & (1 << 15)
 		if leftoverBit != 0 {

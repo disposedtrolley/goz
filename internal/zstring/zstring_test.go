@@ -1,11 +1,11 @@
-package strings_test
+package zstring_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/strings"
+	"git.sr.ht/~disposedtrolley/go-zmachine/internal/zstring"
 )
 
 func TestZtoa(t *testing.T) {
@@ -27,7 +27,7 @@ func TestZtoa(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.Name, func(t *testing.T) {
-			zp := strings.NewZStringProcessor(tc.ZVersion)
+			zp := zstring.NewZStringProcessor(tc.ZVersion)
 
 			actualAscii := zp.Ztoa(tc.InputZscii)
 			assert.Equal(t, tc.ExpectedAscii, actualAscii)
