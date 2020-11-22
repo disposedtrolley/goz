@@ -7,5 +7,6 @@ build:
 run:
 	go run -mod=vendor $(ENTRYPOINT)
 
+.PHONY: test
 test:
 	go test -race ./...
