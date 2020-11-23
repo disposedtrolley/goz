@@ -58,5 +58,8 @@ func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
 		offset += 2
 	}
 
+	// TODO this needs to do some preprocessing to grab Z-strings from
+	//      the abbreviations table if necessary. Ztoa will not have access
+	//      to memory.
 	return chars
 }
