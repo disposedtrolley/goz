@@ -13,7 +13,7 @@ func TestZtoa(t *testing.T) {
 		Name          string
 		ZVersion      int
 		InputZChars   []zstring.ZChar
-		Alphabets     []zstring.Alphabet
+		Alphabets     zstring.Alphabets
 		ExpectedAscii string
 	}{
 		{

@@ -6,11 +6,11 @@ import (
 
 type ZChar uint8 // it's really 5 bits, but we can only go as low as 8 natively.
 
-type Alphabet string
+type Alphabets []string
 
 // Alphabets begin at index 6.
 // The final DefaultAlphabets is the A2 variation used by V1 of the Z-machine.
-var DefaultAlphabets = []Alphabet{
+var DefaultAlphabets = Alphabets{
 	"abcdefghijklmnopqrstuvwxyz",
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	" \n0123456789.,!?_#'\"/\\-:()",
@@ -18,7 +18,7 @@ var DefaultAlphabets = []Alphabet{
 }
 
 // Ztoa takes an array of Z-characters and returns its string representation.
-func Ztoa(chars []ZChar, alphabets []Alphabet, version int) string {
+func Ztoa(chars []ZChar, alphabets Alphabets, version int) string {
 	currentAlphabet := alphabets[0]
 	var output strings.Builder
 
