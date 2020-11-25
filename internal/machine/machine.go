@@ -41,9 +41,40 @@ beginning of:
 }
 
 // decodeZstring returns an array of Z-characters found in memory beginning
-// at the provided offset. Memory is read word-by-word, and the MSB of each
-// word is checked to determine if the end of the Z-string has been reached.
+// at the provided offset. Abbreviations are resolved and included in the
+// returned chars.
 func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
+	chars = m.zStringToChars(offset)
+
+	if m.version < 3 {
+		// Only v3+ have abbreviations.
+		return chars
+	}
+
+	for i := 0; i < len(chars); i++ {
+		currChar := chars[i]
+		if currChar >= 1 && currChar <= 3 && i < len(chars)-1 {
+			// Abbreviation. Replace char[i] and char[i+1] with chars extracted
+			// from the Z-string at the abbreviations table.
+			nextChar := chars[i+1]
+			abbreviationsTableOffset := 32*(currChar-1) + nextChar
+			abbrevChars := m.zStringToChars(memory.HAbbreviationsTable + memory.Address(abbreviationsTableOffset))
+
+			chars = append(chars, abbrevChars...)       // make room
+			copy(chars[i+len(abbrevChars):], chars[i:]) // shift existing chars
+			for j := 0; j < len(abbrevChars); j++ {
+				// insert new chars
+				chars[i+j] = abbrevChars[j]
+			}
+		}
+	}
+
+	return chars
+}
+
+// zStringToChars reads a Z-string beginning at the provided offset, returning
+// an array of raw Z-characters found.
+func (m *Machine) zStringToChars(offset memory.Address) (chars []zstring.ZChar) {
 	done := false
 	for !done {
 		word := m.mem.ReadWord(offset)
@@ -58,8 +89,5 @@ func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
 		offset += 2
 	}
 
-	// TODO this needs to do some preprocessing to grab Z-strings from
-	//      the abbreviations table if necessary. Ztoa will not have access
-	//      to memory.
 	return chars
 }
