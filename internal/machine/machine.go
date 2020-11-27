@@ -51,6 +51,16 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 	for i := 0; i < len(chars); i++ {
 		char := chars[i]
 
+		// ZSCII
+		if currentAlphabet == zstring.A2 && char == 6 {
+			zsciiCode := (uint16(chars[i+1]) << 5) | uint16(chars[i+2])
+			output.WriteByte(byte(zsciiCode))
+			i += 2
+			currentAlphabet = zstring.A0
+
+			continue
+		}
+
 		// Alphabet reads
 		if char >= 6 && char <= 31 {
 			output.WriteByte(zstring.DefaultAlphabets[currentAlphabet][char-6])

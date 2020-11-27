@@ -24,6 +24,13 @@ func TestDecodeZString(t *testing.T) {
 			MemoryOffset:  0x6EE4,
 			ExpectedASCII: "ZORK I: The Great Underground Empire\nCopyright (c) 1981, 1982, 1983 Infocom, Inc. ",
 		},
+		{
+			Name: "when a string with ZSCII characters is decoded",
+			Gamefile: test.ZorkZ3,
+			Version: 3,
+			MemoryOffset: 0x5908,
+			ExpectedASCII: ">",
+		},
 	}
 
 	for _, tc := range tests {
