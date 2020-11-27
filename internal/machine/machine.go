@@ -57,8 +57,16 @@ func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
 			// Abbreviation. Replace char[i] and char[i+1] with chars extracted
 			// from the Z-string at the abbreviations table.
 			nextChar := chars[i+1]
-			abbreviationsTableOffset := 32*(currChar-1) + nextChar
-			abbrevChars := m.zStringToChars(memory.HAbbreviationsTable + memory.Address(abbreviationsTableOffset))
+			abbreviationsTableOffset := uint32(32*(currChar-1) + nextChar)
+
+			// TODO make constructors for byte, word, and packed addresses.
+			// The offset is a word address, so multiply by 2.
+			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset * 2)
+
+			stringAddress := m.mem.ReadWord(abbreviationAddress)
+
+			// Addresses in the abbreviations table are all word addresses, see s1.2.2
+			abbrevChars := m.zStringToChars(memory.Address(stringAddress * 2))
 
 			chars = append(chars, abbrevChars...)       // make room
 			copy(chars[i+len(abbrevChars):], chars[i:]) // shift existing chars
@@ -66,6 +74,8 @@ func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
 				// insert new chars
 				chars[i+j] = abbrevChars[j]
 			}
+
+			i += len(abbrevChars) + 1
 		}
 	}
 

@@ -32,6 +32,7 @@ func TestDecodeZString(t *testing.T) {
 			game, err := test.ReadGamfile(tc.Gamefile)
 			require.Nil(t, err, "should not error when reading gamefile")
 			m := NewMachine(game)
+			m.WithVersion(tc.Version)
 			chars := m.decodeZstring(tc.MemoryOffset)
 			assert.Equal(t, tc.ExpectedASCII, zstring.Ztoa(chars, zstring.DefaultAlphabets, tc.Version))
 		})
