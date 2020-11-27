@@ -93,6 +93,7 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 			output.WriteString(m.decodeZstring(memory.Address(stringAddress * 2)))
 
 			i++  // jump past the abbreviation
+			currentAlphabet = zstring.A0
 		}
 	}
 
