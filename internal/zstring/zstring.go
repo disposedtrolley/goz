@@ -29,15 +29,20 @@ var DefaultAlphabets = Alphabets{
 
 // Ztoa takes an array of Z-characters and returns its string representation.
 func Ztoa(chars []ZChar, alphabets Alphabets, version int) string {
-	lockAll := false
-	lockNext := false
+	lock := false
 	currentAlphabet := A0
 
 	var output strings.Builder
 
 	for i, char := range chars {
 		fmt.Println(i)
-		if !lockAll && !lockNext {
+
+		// Alphabet reads
+		if char >= 6 && char <= 31 {
+			output.WriteByte(alphabets[currentAlphabet][char-6])
+		}
+
+		if !lock {
 			currentAlphabet = A0
 		}
 
@@ -48,25 +53,15 @@ func Ztoa(chars []ZChar, alphabets Alphabets, version int) string {
 
 		// Alphabet changes
 		if char >= 2 && char <= 5 {
-			currentAlphabet, lockNext, lockAll = transition(currentAlphabet, char, version)
-			continue
-		}
-
-		// Alphabet reads
-		if char >= 6 && char <= 31 {
-			output.WriteByte(alphabets[currentAlphabet][char-6])
-		}
-
-		if lockNext {
-			lockNext = false
+			currentAlphabet, lock = transition(currentAlphabet, char, version)
 		}
 	}
 
 	return output.String()
 }
 
-func transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alphabet, lockNext, lockAll bool) {
-	// 				 from A0  from A1  from A2
+func transitionsTable() map[Alphabet]map[ZChar]Alphabet {
+	// 		 from A0  from A1  from A2
 	// Z-char 2      A1       A2       A0  // next char only
 	// Z-char 3      A2       A0       A1  // next char only
 	// Z-char 4      A1       A2       A0  // permanent (<v3) next char only (v3+)
@@ -88,13 +83,13 @@ func transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alp
 	transitions[A2][4] = A0
 	transitions[A2][5] = A1
 
+	return transitions
+}
+
+var transitions = transitionsTable()
+
+func transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alphabet, lock bool) {
 	newAlphabet = transitions[currAlphabet][char]
 
-	if version < 3 && char > 3 {
-		lockAll = true
-	}
-
-	lockNext = true
-
-	return newAlphabet, lockNext, lockAll
+	return newAlphabet, version < 3 && char > 3
 }
