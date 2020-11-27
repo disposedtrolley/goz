@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/zstring"
 	"git.sr.ht/~disposedtrolley/go-zmachine/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +22,7 @@ func TestDecodeZString(t *testing.T) {
 			Gamefile:      test.ZorkZ3,
 			Version:       3,
 			MemoryOffset:  0x6EE4,
-			ExpectedASCII: "foo",
+			ExpectedASCII: "ZORK I: The Great Underground Empire\nCopyright (c) 1981, 1982, 1983 Infocom, Inc. ",
 		},
 	}
 
@@ -33,8 +32,8 @@ func TestDecodeZString(t *testing.T) {
 			require.Nil(t, err, "should not error when reading gamefile")
 			m := NewMachine(game)
 			m.WithVersion(tc.Version)
-			chars := m.decodeZstring(tc.MemoryOffset)
-			assert.Equal(t, tc.ExpectedASCII, zstring.Ztoa(chars, zstring.DefaultAlphabets, tc.Version))
+			str := m.decodeZstring(tc.MemoryOffset)
+			assert.Equal(t, tc.ExpectedASCII, str)
 		})
 	}
 }

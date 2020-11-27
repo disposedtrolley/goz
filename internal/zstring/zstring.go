@@ -1,10 +1,5 @@
 package zstring
 
-import (
-	"fmt"
-	"strings"
-)
-
 type ZChar uint8 // it's really 5 bits, but we can only go as low as 8 natively.
 
 type Alphabets []string
@@ -25,39 +20,6 @@ var DefaultAlphabets = Alphabets{
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	" \n0123456789.,!?_#'\"/\\-:()",
 	" 0123456789.,!?_#'\"/\\<-:()",
-}
-
-// Ztoa takes an array of Z-characters and returns its string representation.
-func Ztoa(chars []ZChar, alphabets Alphabets, version int) string {
-	lock := false
-	currentAlphabet := A0
-
-	var output strings.Builder
-
-	for i, char := range chars {
-		fmt.Println(i)
-
-		// Alphabet reads
-		if char >= 6 && char <= 31 {
-			output.WriteByte(alphabets[currentAlphabet][char-6])
-		}
-
-		if !lock {
-			currentAlphabet = A0
-		}
-
-		// Space
-		if char == 0 {
-			output.WriteString(" ")
-		}
-
-		// Alphabet changes
-		if char >= 2 && char <= 5 {
-			currentAlphabet, lock = transition(currentAlphabet, char, version)
-		}
-	}
-
-	return output.String()
 }
 
 func transitionsTable() map[Alphabet]map[ZChar]Alphabet {
@@ -88,7 +50,7 @@ func transitionsTable() map[Alphabet]map[ZChar]Alphabet {
 
 var transitions = transitionsTable()
 
-func transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alphabet, lock bool) {
+func Transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alphabet, lock bool) {
 	newAlphabet = transitions[currAlphabet][char]
 
 	return newAlphabet, version < 3 && char > 3

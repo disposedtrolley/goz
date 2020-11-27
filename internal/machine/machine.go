@@ -2,6 +2,7 @@ package machine
 
 import (
 	"fmt"
+	"strings"
 
 	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
 	"git.sr.ht/~disposedtrolley/go-zmachine/internal/zstring"
@@ -40,46 +41,52 @@ beginning of:
 	return nil
 }
 
-// decodeZstring returns an array of Z-characters found in memory beginning
-// at the provided offset. Abbreviations are resolved and included in the
-// returned chars.
-func (m *Machine) decodeZstring(offset memory.Address) (chars []zstring.ZChar) {
-	chars = m.zStringToChars(offset)
-
-	if m.version < 3 {
-		// Only v3+ have abbreviations.
-		return chars
-	}
-
+// decodeZstring returns a string representing the decoded Z-characters found
+// at the provided memory offset.
+func (m *Machine) decodeZstring(offset memory.Address) string {
+	chars := m.zStringToChars(offset)
+	var output strings.Builder
+	lock := false
+	currentAlphabet := zstring.A0
 	for i := 0; i < len(chars); i++ {
-		currChar := chars[i]
-		if currChar >= 1 && currChar <= 3 && i < len(chars)-1 {
-			// Abbreviation. Replace char[i] and char[i+1] with chars extracted
-			// from the Z-string at the abbreviations table.
+		char := chars[i]
+
+		// Alphabet reads
+		if char >= 6 && char <= 31 {
+			output.WriteByte(zstring.DefaultAlphabets[currentAlphabet][char-6])
+		}
+
+		// Space
+		if char == 0 {
+			output.WriteString(" ")
+		}
+
+		// Reset the alphabet as necessary
+		if !lock {
+			currentAlphabet = zstring.A0
+		}
+
+		// Alphabet changes
+		if char >= 2 && char <= 5 {
+			currentAlphabet, lock = zstring.Transition(currentAlphabet, char, m.version)
+		}
+
+		// Abbreviation
+		if char >= 1 && char <= 3 && i < len(chars)-1 {
 			nextChar := chars[i+1]
-			abbreviationsTableOffset := uint32(32*(currChar-1) + nextChar)
+			abbreviationsTableOffset := uint32(32*(char-1) + nextChar)
 
 			// TODO make constructors for byte, word, and packed addresses.
-			// The offset is a word address, so multiply by 2.
-			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset * 2)
-
+			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset * 2)  // The offset is a word address, so multiply by 2.
 			stringAddress := m.mem.ReadWord(abbreviationAddress)
-
 			// Addresses in the abbreviations table are all word addresses, see s1.2.2
-			abbrevChars := m.zStringToChars(memory.Address(stringAddress * 2))
+			output.WriteString(m.decodeZstring(memory.Address(stringAddress * 2)))
 
-			chars = append(chars, abbrevChars...)       // make room
-			copy(chars[i+len(abbrevChars):], chars[i:]) // shift existing chars
-			for j := 0; j < len(abbrevChars); j++ {
-				// insert new chars
-				chars[i+j] = abbrevChars[j]
-			}
-
-			i += len(abbrevChars) + 1
+			i++  // jump past the abbreviation
 		}
 	}
 
-	return chars
+	return output.String()
 }
 
 // zStringToChars reads a Z-string beginning at the provided offset, returning
