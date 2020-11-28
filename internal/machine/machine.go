@@ -54,10 +54,24 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 		// ZSCII
 		if currentAlphabet == zstring.A2 && char == 6 {
 			zsciiCode := (uint16(chars[i+1]) << 5) | uint16(chars[i+2])
-			output.WriteByte(byte(zsciiCode))
+
+			switch c := zsciiCode; {
+			// Tab (v6 only)
+			case c == 9:
+				output.WriteString("\t")
+			// Sentence space (v6 only)
+			case c == 11:
+				output.WriteString(" ")
+			// Newline
+			case c == 13:
+				output.WriteString("\n")
+			// Standard ASCII
+			case c >= 32 && c <= 126:
+				output.WriteByte(byte(c))
+			}
+
 			i += 2
 			currentAlphabet = zstring.A0
-
 			continue
 		}
 
