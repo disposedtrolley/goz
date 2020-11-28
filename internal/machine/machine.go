@@ -55,15 +55,15 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 		if currentAlphabet == zstring.A2 && char == 6 {
 			zsciiCode := (uint16(chars[i+1]) << 5) | uint16(chars[i+2])
 
-			switch c := zsciiCode; {
+			switch c := zstring.ZSCIIChar(zsciiCode); {
 			// Tab (v6 only)
-			case c == 9:
+			case c == zstring.ZSCIITab:
 				output.WriteString("\t")
 			// Sentence space (v6 only)
-			case c == 11:
+			case c == zstring.ZSCIISentenceSpace:
 				output.WriteString(" ")
 			// Newline
-			case c == 13:
+			case c == zstring.ZSCIINewline:
 				output.WriteString("\n")
 			// Standard ASCII
 			case c >= 32 && c <= 126:

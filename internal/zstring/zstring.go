@@ -13,6 +13,13 @@ const (
 	A2v1 Alphabet = 3
 )
 
+type ZSCIIChar uint16
+const (
+	ZSCIITab ZSCIIChar = 9
+	ZSCIISentenceSpace ZSCIIChar = 11
+	ZSCIINewline ZSCIIChar = 13
+)
+
 // Alphabets begin at index 6.
 // The final DefaultAlphabets is the A2 variation used by V1 of the Z-machine.
 var DefaultAlphabets = Alphabets{
