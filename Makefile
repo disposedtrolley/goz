@@ -1,4 +1,4 @@
-ENTRYPOINT:=./cmd/go-zmachine/main.go
+ENTRYPOINT:=./cmd/goz/main.go
 BINARY_NAME:=goz
 
 build:

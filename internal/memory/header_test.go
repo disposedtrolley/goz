@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
-	"git.sr.ht/~disposedtrolley/go-zmachine/test"
+	"github.com/disposedtrolley/goz/internal/memory"
+	"github.com/disposedtrolley/goz/test"
 )
 
 func TestHeaderCommon(t *testing.T) {

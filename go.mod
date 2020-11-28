@@ -1,4 +1,4 @@
-module git.sr.ht/~disposedtrolley/go-zmachine
+module github.com/disposedtrolley/goz
 
 go 1.15
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
+	"github.com/disposedtrolley/goz/internal/memory"
 )
 
 func TestMemoryRead(t *testing.T) {

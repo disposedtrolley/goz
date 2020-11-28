@@ -3,8 +3,8 @@ package machine
 import (
 	"testing"
 
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
-	"git.sr.ht/~disposedtrolley/go-zmachine/test"
+	"github.com/disposedtrolley/goz/internal/memory"
+	"github.com/disposedtrolley/goz/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

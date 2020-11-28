@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/memory"
-	"git.sr.ht/~disposedtrolley/go-zmachine/internal/zstring"
+	"github.com/disposedtrolley/goz/internal/memory"
+	"github.com/disposedtrolley/goz/internal/zstring"
 )
 
 type Game []byte
@@ -87,12 +87,12 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 			abbreviationsTableOffset := uint32(32*(char-1) + nextChar)
 
 			// TODO make constructors for byte, word, and packed addresses.
-			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset * 2)  // The offset is a word address, so multiply by 2.
+			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset*2) // The offset is a word address, so multiply by 2.
 			stringAddress := m.mem.ReadWord(abbreviationAddress)
 			// Addresses in the abbreviations table are all word addresses, see s1.2.2
 			output.WriteString(m.decodeZstring(memory.Address(stringAddress * 2)))
 
-			i++  // jump past the abbreviation
+			i++ // jump past the abbreviation
 			currentAlphabet = zstring.A0
 		}
 	}
