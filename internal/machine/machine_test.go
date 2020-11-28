@@ -39,11 +39,18 @@ func TestDecodeZString(t *testing.T) {
 			ExpectedASCII: ">",
 		},
 		{
-			Name:          "when a long Z-string is decoded - v8",
+			Name:          "when a string with abbreviations is decoded - v8",
 			Gamefile:      test.JigsawZ8,
 			Version:       8,
 			MemoryOffset:  0x38631,
 			ExpectedASCII: "               Welcome to JIGSAW\n",
+		},
+		{
+			Name:          "when a long Z-string is decoded - v8",
+			Gamefile:      test.JigsawZ8,
+			Version:       8,
+			MemoryOffset:  0x314BC,
+			ExpectedASCII: "\nNew Year's Eve, 1999, a quarter to midnight and where else to be but Century Park! Fireworks cascade across the sky, your stomach rumbles uneasily, music and lasers howl across the parkland... Not exactly your ideal party (especially as that rather attractive stranger in black has slipped back into the crowds) - but cheer up, you won't live to see the next.\n\n",
 		},
 	}
 
