@@ -98,13 +98,11 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 		// Abbreviation
 		if char >= 1 && char <= 3 && i < len(chars)-1 {
 			nextChar := chars[i+1]
-			abbreviationsTableOffset := uint32(32*(char-1) + nextChar)
-
-			// TODO make constructors for byte, word, and packed addresses.
-			abbreviationAddress := memory.Address(uint32(m.mem.ReadWord(memory.HAbbreviationsTable)) + abbreviationsTableOffset*2) // The offset is a word address, so multiply by 2.
+			abbreviationsTableOffset := m.mem.WordAddress(memory.Address(32*(char-1) + nextChar))
+			abbreviationAddress := m.mem.ByteAddress(memory.Address(m.mem.ReadWord(memory.HAbbreviationsTable))) + abbreviationsTableOffset
 			stringAddress := m.mem.ReadWord(abbreviationAddress)
 			// Addresses in the abbreviations table are all word addresses, see s1.2.2
-			output.WriteString(m.decodeZstring(memory.Address(stringAddress * 2)))
+			output.WriteString(m.decodeZstring(m.mem.WordAddress(memory.Address(stringAddress))))
 
 			i++ // jump past the abbreviation
 			currentAlphabet = zstring.A0

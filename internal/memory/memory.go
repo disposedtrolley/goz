@@ -68,3 +68,53 @@ func (m *Memory) readOnlyCheck(a Address) {
 func (m *Memory) Size() int {
 	return len(m.content)
 }
+
+// ByteAddress returns addr as a byte address.
+func (m *Memory) ByteAddress(addr Address) Address {
+	return addr
+}
+
+// WordAddress returns addr as a word address.
+func (m *Memory) WordAddress(addr Address) Address {
+	return addr * 2
+}
+
+// PackedAddress returns addr as a packed address. Versions 6 and 7 have
+// additional constants for routine and string offsets and are not supported by
+// this function.
+func (m *Memory) PackedAddress(addr Address, version int) Address {
+	switch v := version; {
+	case v <= 3:
+		return addr * 2
+	case v <= 5:
+		return addr * 4
+	case v == 8:
+		return addr * 8
+	default:
+		panic(fmt.Errorf("method PackedAddress not supported for version %v", version))
+	}
+}
+
+// PackedAddressRoutine returns addr as a packed routine address. Only supports
+// version 6 and 7.
+func (m *Memory) PackedAddressRoutine(addr Address, version int) Address {
+	if version != 6 && version != 7 {
+		panic(fmt.Errorf("method not supported for version %v", version))
+	}
+
+	routineOffset := m.ReadWord(HRoutinesOffset)
+
+	return Address(uint16(addr)*4 + 8*routineOffset)
+}
+
+// PackedAddressString returns addr as a packed string address. Only supports
+// version 6 and 7.
+func (m *Memory) PackedAddressString(addr Address, version int) Address {
+	if version != 6 && version != 7 {
+		panic(fmt.Errorf("method not supported for version %v", version))
+	}
+
+	stringOffset := m.ReadWord(HStaticStringsOffset)
+
+	return Address(uint16(addr)*4 + 8*stringOffset)
+}
