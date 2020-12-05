@@ -44,70 +44,81 @@ beginning of:
 // decodeZstring returns a string representing the decoded Z-characters found
 // at the provided memory offset.
 func (m *Machine) decodeZstring(offset memory.Address) string {
-	chars := m.zStringToChars(offset)
 	var output strings.Builder
-	lock := false
-	currentAlphabet := zstring.A0
-	for i := 0; i < len(chars); i++ {
-		char := chars[i]
 
-		// ZSCII
-		if currentAlphabet == zstring.A2 && char == 6 {
-			zsciiCode := (uint16(chars[i+1]) << 5) | uint16(chars[i+2])
+	var decodeZstringHelper func(offset memory.Address, isAbbreviation bool)
+	decodeZstringHelper = func(offset memory.Address, isAbbreviation bool) {
+		chars := m.zStringToChars(offset)
+		lock := false
+		currentAlphabet := zstring.A0
+		for i := 0; i < len(chars); i++ {
+			char := chars[i]
 
-			switch c := zstring.ZSCIIChar(zsciiCode); {
-			// Tab (v6 only)
-			case c == zstring.ZSCIITab:
-				output.WriteString("\t")
-			// Sentence space (v6 only)
-			case c == zstring.ZSCIISentenceSpace:
-				output.WriteString(" ")
-			// Newline
-			case c == zstring.ZSCIINewline:
-				output.WriteString("\n")
-			// Standard ASCII
-			case c >= 32 && c <= 126:
-				output.WriteByte(byte(c))
+			// ZSCII
+			if currentAlphabet == zstring.A2 && char == 6 {
+				zsciiCode := (uint16(chars[i+1]) << 5) | uint16(chars[i+2])
+
+				switch c := zstring.ZSCIIChar(zsciiCode); {
+				// Tab (v6 only)
+				case c == zstring.ZSCIITab:
+					output.WriteString("\t")
+				// Sentence space (v6 only)
+				case c == zstring.ZSCIISentenceSpace:
+					output.WriteString(" ")
+				// Newline
+				case c == zstring.ZSCIINewline:
+					output.WriteString("\n")
+				// Standard ASCII
+				case c >= 32 && c <= 126:
+					output.WriteByte(byte(c))
+				}
+
+				i += 2
+				currentAlphabet = zstring.A0
+				continue
 			}
 
-			i += 2
-			currentAlphabet = zstring.A0
-			continue
-		}
+			// Alphabet reads
+			if char >= 6 && char <= 31 {
+				output.WriteByte(zstring.DefaultAlphabets[currentAlphabet][char-6])
+			}
 
-		// Alphabet reads
-		if char >= 6 && char <= 31 {
-			output.WriteByte(zstring.DefaultAlphabets[currentAlphabet][char-6])
-		}
+			// Space
+			if char == 0 {
+				output.WriteString(" ")
+			}
 
-		// Space
-		if char == 0 {
-			output.WriteString(" ")
-		}
+			// Reset the alphabet as necessary
+			if !lock {
+				currentAlphabet = zstring.A0
+			}
 
-		// Reset the alphabet as necessary
-		if !lock {
-			currentAlphabet = zstring.A0
-		}
+			// Alphabet changes
+			if char >= 2 && char <= 5 {
+				currentAlphabet, lock = zstring.Transition(currentAlphabet, char, m.version)
+			}
 
-		// Alphabet changes
-		if char >= 2 && char <= 5 {
-			currentAlphabet, lock = zstring.Transition(currentAlphabet, char, m.version)
-		}
+			// Abbreviation
+			if char >= 1 && char <= 3 && i < len(chars)-1 {
+				if isAbbreviation {
+					// Recursive abbreviation.
+					panic(fmt.Errorf("recursive abbreviation at offset %v. Decoded: %s", offset, output.String()))
+				}
 
-		// Abbreviation
-		if char >= 1 && char <= 3 && i < len(chars)-1 {
-			nextChar := chars[i+1]
-			abbreviationsTableOffset := m.mem.WordAddress(memory.Address(32*(char-1) + nextChar))
-			abbreviationAddress := m.mem.ByteAddress(memory.Address(m.mem.ReadWord(memory.HAbbreviationsTable))) + abbreviationsTableOffset
-			stringAddress := m.mem.ReadWord(abbreviationAddress)
-			// Addresses in the abbreviations table are all word addresses, see s1.2.2
-			output.WriteString(m.decodeZstring(m.mem.WordAddress(memory.Address(stringAddress))))
+				nextChar := chars[i+1]
+				abbreviationsTableOffset := m.mem.WordAddress(memory.Address(32*(char-1) + nextChar))
+				abbreviationAddress := m.mem.ByteAddress(memory.Address(m.mem.ReadWord(memory.HAbbreviationsTable))) + abbreviationsTableOffset
+				stringAddress := m.mem.ReadWord(abbreviationAddress)
+				// Addresses in the abbreviations table are all word addresses, see s1.2.2
+				decodeZstringHelper(m.mem.WordAddress(memory.Address(stringAddress)), true)
 
-			i++ // jump past the abbreviation
-			currentAlphabet = zstring.A0
+				i++ // jump past the abbreviation
+				currentAlphabet = zstring.A0
+			}
 		}
 	}
+
+	decodeZstringHelper(offset, false)
 
 	return output.String()
 }
