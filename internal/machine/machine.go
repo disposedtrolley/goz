@@ -71,6 +71,9 @@ func (m *Machine) decodeZstring(offset memory.Address) string {
 				// Standard ASCII
 				case c >= 32 && c <= 126:
 					output.WriteByte(byte(c))
+				// Unicode
+				case c >= 155 && c <= 251:
+					output.WriteString(fmt.Sprintf("%c", zstring.UnicodeChars[c-155]))
 				}
 
 				i += 2
