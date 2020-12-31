@@ -1,6 +1,7 @@
 package machine
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/disposedtrolley/goz/internal/memory"
@@ -64,4 +65,20 @@ func TestDecodeZString(t *testing.T) {
 			assert.Equal(t, tc.ExpectedASCII, str)
 		})
 	}
+}
+
+func TestOutput(t *testing.T) {
+	game, err := test.ReadGamfile(test.JigsawZ8)
+	require.Nil(t, err, "should not error when reading gamefile")
+	m := NewMachine(game)
+	m.WithVersion(8)
+
+	var buf bytes.Buffer
+	m.SetOutput(&buf)
+	m.Start()
+
+	assert.Equal(t,
+		"z8 gamefile weighing in at 304640 bytes\n\nbeginning of:\n  static memory: 6fc6\n  high memory: bc60\n",
+		buf.String(),
+		"should write to the supplied buffer")
 }

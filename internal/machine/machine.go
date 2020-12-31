@@ -2,6 +2,7 @@ package machine
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/disposedtrolley/goz/internal/memory"
@@ -13,6 +14,7 @@ type Game []byte
 type Machine struct {
 	version int
 	mem     *memory.Memory
+	output io.Writer
 }
 
 func NewMachine(game Game) *Machine {
@@ -25,18 +27,23 @@ func (m *Machine) WithVersion(version int) {
 	m.version = version
 }
 
+func (m *Machine) SetOutput(w io.Writer) {
+	m.output = w
+}
+
 func (m *Machine) Start() error {
 	if m.version == 0 {
 		// Inspect the game file for the version.
 		m.version = int(m.mem.ReadByte(memory.HVersion))
 	}
 
-	fmt.Printf("z%d gamefile weighing in at %d bytes\n", m.version, m.mem.Size())
-	fmt.Printf(`
+	m.output.Write([]byte(fmt.Sprintf("z%d gamefile weighing in at %d bytes\n", m.version, m.mem.Size())))
+
+	m.output.Write([]byte(fmt.Sprintf(`
 beginning of:
   static memory: %x
   high memory: %x
-`, m.mem.ReadWord(memory.HStaticMemoryBegin), m.mem.ReadWord(memory.HHighMemoryBegin))
+`, m.mem.ReadWord(memory.HStaticMemoryBegin), m.mem.ReadWord(memory.HHighMemoryBegin))))
 
 	return nil
 }
