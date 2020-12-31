@@ -14,7 +14,8 @@ type Game []byte
 type Machine struct {
 	version int
 	mem     *memory.Memory
-	output io.Writer
+	output  io.Writer
+	input   io.Reader
 }
 
 func NewMachine(game Game) *Machine {
@@ -29,6 +30,10 @@ func (m *Machine) WithVersion(version int) {
 
 func (m *Machine) SetOutput(w io.Writer) {
 	m.output = w
+}
+
+func (m *Machine) SetInput(r io.Reader) {
+	m.input = r
 }
 
 func (m *Machine) Start() error {
