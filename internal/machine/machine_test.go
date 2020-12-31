@@ -120,6 +120,48 @@ func TestInput(t *testing.T) {
 			Input:                "examine",
 			ExpectedEncodedInput: []zstring.ZChar{10, 29, 6, 18, 14, 19},
 		},
+		{
+			Name:                 "when a string using other alphabets is encoded (<v4)",
+			Gamefile:             test.ZorkZ3,
+			Version:              3,
+			Input:                "hello?",
+			ExpectedEncodedInput: []zstring.ZChar{13, 10, 17, 17, 20, 5, 21},
+		},
+		{
+			Name:                 "when a string using other alphabets is encoded (v4+)",
+			Gamefile:             test.JigsawZ8,
+			Version:              8,
+			Input:                "hello?",
+			ExpectedEncodedInput: []zstring.ZChar{13, 10, 17, 17, 20, 5, 21, 5, 5},
+		},
+		{
+			Name:                 "when a ZSCII string is encoded (<v4)",
+			Gamefile:             test.ZorkZ3,
+			Version:              3,
+			Input:                "áéíóú",
+			ExpectedEncodedInput: []zstring.ZChar{5, 6, 6, 3, 5, 6, 5, 1},
+		},
+		{
+			Name:                 "when a ZSCII string is encoded (v4+)",
+			Gamefile:             test.JigsawZ8,
+			Version:              8,
+			Input:                "áéíóú",
+			ExpectedEncodedInput: []zstring.ZChar{5, 6, 6, 3, 5, 6, 5, 1, 5, 6, 6, 3},
+		},
+		{
+			Name:                 "when a mixed string is encoded (<v4)",
+			Gamefile:             test.ZorkZ3,
+			Version:              3,
+			Input:                "á?l",
+			ExpectedEncodedInput: []zstring.ZChar{5, 6, 6, 3, 5, 6, 5, 1},
+		},
+		{
+			Name:                 "when a mixed string is encoded (v4+)",
+			Gamefile:             test.JigsawZ8,
+			Version:              8,
+			Input:                "á?l",
+			ExpectedEncodedInput: []zstring.ZChar{5, 6, 6, 3, 5, 6, 5, 1, 5, 21},
+		},
 	}
 
 	for _, tc := range tests {

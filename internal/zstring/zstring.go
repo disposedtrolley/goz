@@ -1,5 +1,7 @@
 package zstring
 
+import "strings"
+
 type ZChar uint8 // it's really 5 bits, but we can only go as low as 8 natively.
 
 const (
@@ -78,4 +80,25 @@ func Transition(currAlphabet Alphabet, char ZChar, version int) (newAlphabet Alp
 	newAlphabet = transitions[currAlphabet][char]
 
 	return newAlphabet, version < 3 && char > 3
+}
+
+// InAlphabet attempts to return the alphabet and index in which the string s appears.
+// in is false if no alphabet contains s.
+// The returned idx already has the offset applied (real index + 6).
+func InAlphabet(s string, version int) (in bool, alphabet Alphabet, index int) {
+	alphabets := []Alphabet{A0, A1, A2}
+	if version == 1 {
+		alphabets[A2] = A2v1
+	}
+
+	for _, a := range alphabets {
+		currAlphabet := DefaultAlphabets[a]
+
+		idx := strings.Index(currAlphabet, s)
+		if idx >= 0 {
+			return true, a, idx + 6
+		}
+	}
+
+	return false, 0, 0
 }

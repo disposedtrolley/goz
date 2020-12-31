@@ -173,23 +173,45 @@ func (m *Machine) encodeInput(s string) (zchars []zstring.ZChar) {
 	// Characters above the max length are truncated.
 	// The Z-machine's dictionary doesn't actually hold the word
 	// `examine`, but `examin`.
-	for i := 0; i < inputWordLength; i++ {
-		if i >= len(s) {
+	inputIdx := 0
+	outputIdx := 0
+	for outputIdx < inputWordLength {
+		if inputIdx >= len(s) {
 			// We've run out of characters in the input word, so pad the rest.
 			zchars = append(zchars, zstring.PAD)
+			outputIdx += 1
 			continue
 		}
 
 		// Process the current char from the input word.
-		currChar := s[i]
+		currChar := s[inputIdx]
+		inputIdx += 1
 
 		// Alphabet or ZSCII?
-		idx := strings.Index(zstring.DefaultAlphabets[zstring.A0], string(currChar))
-		if idx >= 0 {
-			// Alphabet A0.
-			zchars = append(zchars, zstring.ZChar(6+idx))
+		in, alphabet, idx := zstring.InAlphabet(string(currChar), m.version)
+		if in {
+			// Alphabet.
+			if alphabet != zstring.A0 {
+				// Alphabet change required.
+				// Use the correct temporary alphabet change character based on machine version.
+				offset := 3
+				if m.version < 3 {
+					offset = 1
+				}
+				zchars = append(zchars, zstring.ZChar(int(alphabet)+offset))
+				outputIdx += 1
+			}
+
+			zchars = append(zchars, zstring.ZChar(idx))
+			outputIdx += 1
 		} else {
-			// ZSCII???
+			// ZSCII.
+			zchars = append(zchars,
+				zstring.PAD,
+				6,
+				zstring.ZChar(currChar>>5),   // top 5 bits
+				zstring.ZChar(currChar&0x1F)) // bottom 5 bits
+			outputIdx += 4
 		}
 	}
 
