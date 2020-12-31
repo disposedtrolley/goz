@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/disposedtrolley/goz/internal/memory"
+	"github.com/disposedtrolley/goz/internal/zstring"
 	"github.com/disposedtrolley/goz/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,4 +82,56 @@ func TestOutput(t *testing.T) {
 		"z8 gamefile weighing in at 304640 bytes\n\nbeginning of:\n  static memory: 6fc6\n  high memory: bc60\n",
 		buf.String(),
 		"should write to the supplied buffer")
+}
+
+func TestInput(t *testing.T) {
+	tests := []struct {
+		Name                 string
+		Gamefile             test.Gamefile
+		Version              int
+		Input                string
+		ExpectedEncodedInput []zstring.ZChar
+	}{
+		{
+			Name:                 "when the example in §3.7 is encoded (v4+)",
+			Gamefile:             test.JigsawZ8,
+			Version:              8,
+			Input:                "i",
+			ExpectedEncodedInput: []zstring.ZChar{14, 5, 5, 5, 5, 5, 5, 5, 5},
+		},
+		{
+			Name:                 "when the example in §3.7 is encoded (<v4)",
+			Gamefile:             test.ZorkZ3,
+			Version:              3,
+			Input:                "i",
+			ExpectedEncodedInput: []zstring.ZChar{14, 5, 5, 5, 5, 5},
+		},
+		{
+			Name:                 "when a longer alpha string is encoded (v4+",
+			Gamefile:             test.JigsawZ8,
+			Version:              8,
+			Input:                "examine",
+			ExpectedEncodedInput: []zstring.ZChar{10, 29, 6, 18, 14, 19, 10, 5, 5},
+		},
+		{
+			Name:                 "when a longer alpha string is encoded (<v4",
+			Gamefile:             test.ZorkZ3,
+			Version:              3,
+			Input:                "examine",
+			ExpectedEncodedInput: []zstring.ZChar{10, 29, 6, 18, 14, 19},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.Name, func(t *testing.T) {
+			game, err := test.ReadGamfile(tc.Gamefile)
+			require.Nil(t, err, "should not error when reading gamefile")
+			m := NewMachine(game)
+			m.WithVersion(tc.Version)
+
+			encodedInput := m.encodeInput(tc.Input)
+
+			assert.Equal(t, tc.ExpectedEncodedInput, encodedInput)
+		})
+	}
 }

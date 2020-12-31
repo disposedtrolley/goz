@@ -2,14 +2,19 @@ package zstring
 
 type ZChar uint8 // it's really 5 bits, but we can only go as low as 8 natively.
 
+const (
+	PAD ZChar = 5
+)
+
 type Alphabets []string
 
 type Alphabet int
 
 const (
-	A0   Alphabet = 0
-	A1   Alphabet = 1
-	A2   Alphabet = 2
+	A0 Alphabet = 0
+	A1 Alphabet = 1
+	A2 Alphabet = 2
+
 	A2v1 Alphabet = 3
 )
 

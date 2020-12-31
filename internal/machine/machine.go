@@ -157,3 +157,41 @@ func (m *Machine) zStringToChars(offset memory.Address) (chars []zstring.ZChar) 
 
 	return chars
 }
+
+// encodeInput encodes the user input string s into an array of ZChars, comprised of one or
+// more ZStrings.
+func (m *Machine) encodeInput(s string) (zchars []zstring.ZChar) {
+	// §3.7
+	s = strings.ToLower(s)
+
+	// Max length of the input word differs based on machine version.
+	inputWordLength := 6
+	if m.version >= 4 {
+		inputWordLength = 9
+	}
+
+	// Characters above the max length are truncated.
+	// The Z-machine's dictionary doesn't actually hold the word
+	// `examine`, but `examin`.
+	for i := 0; i < inputWordLength; i++ {
+		if i >= len(s) {
+			// We've run out of characters in the input word, so pad the rest.
+			zchars = append(zchars, zstring.PAD)
+			continue
+		}
+
+		// Process the current char from the input word.
+		currChar := s[i]
+
+		// Alphabet or ZSCII?
+		idx := strings.Index(zstring.DefaultAlphabets[zstring.A0], string(currChar))
+		if idx >= 0 {
+			// Alphabet A0.
+			zchars = append(zchars, zstring.ZChar(6+idx))
+		} else {
+			// ZSCII???
+		}
+	}
+
+	return zchars
+}
